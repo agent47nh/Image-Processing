@@ -2,7 +2,7 @@
 
 int main() {
 	
-	GrayscaleImage img, target(1000,1000);
+	GrayscaleImage img, target(256,256);
 	img.Load("../../images/read.png");
 	float scaleFactor = (float)img.GetWidth() / target.GetWidth();
 	for(int y = 0; y<target.GetHeight(); y++)
