@@ -1,12 +1,7 @@
 #include "../headers/Image.h"
 #include <math.h>
 
-//(p[1] + 0.5 * x*(p[2] - p[0] + x*(2.0*p[0] - 5.0*p[1] + 4.0*p[2] - p[3] + x*(3.0*(p[1] - p[2]) + p[3] - p[0]))))
-
-int main(){
-    const float xScale = 0.5, yScale = 0.5;
-    GrayscaleImage source;
-    source.Load("../../images/read.png");
+int bicubicInterpolation(GrayscaleImage& source, const float xScale, const float yScale, const std::string& output){
     GrayscaleImage target(source.GetWidth()*xScale, source.GetHeight()*yScale);
     const double xScaleFactor = (double)source.GetWidth()/target.GetWidth(), yScaleFactor = (double)source.GetHeight()/target.GetHeight();
     for(int y=0; y<target.GetHeight(); y++)
@@ -33,15 +28,21 @@ int main(){
                 ((source.Get(pixelDA[0], pixelDA[1])) + 0.5 * 0.2 *((source.Get(pixelDB[0], pixelDB[1])) - (source.Get(pixelD[0], pixelD[1])) + 0.2 *(2.0*(source.Get(pixelD[0], pixelD[1])) 
                 - 5.0*(source.Get(pixelDA[0], pixelDA[1])) + 4.0*(source.Get(pixelDB[0], pixelDB[1])) - (source.Get(pixelDC[0], pixelDC[1])) + 0.2 *(3.0*((source.Get(pixelDA[0], pixelDA[1]))) 
                 - (source.Get(pixelDB[0], pixelDB[1]))) + (source.Get(pixelDC[0], pixelDC[1])) - (source.Get(pixelD[0], pixelD[1])))))
-                },
-            verticalPixel=
+                };
+            target(x,y) =
                     (horizontalPixels[1] + 0.5 * 0.001 *(horizontalPixels[2] - horizontalPixels[0] + 0.001 *(2.0*horizontalPixels[0] - 5.0*horizontalPixels[1] + 4.0*horizontalPixels[2] - 
                     horizontalPixels[3] + 0.001 *(3.0*(horizontalPixels[1] - horizontalPixels[2]) + horizontalPixels[3] - horizontalPixels[0]))));
-            target(x,y) = verticalPixel;
-            int varna = source.Get(pixelBA[0], pixelBA[1]);
-            std::cout<< verticalPixel <<std::endl;
         }
     target.Save("../../output/BiCubicOutput.png");
-    std::cout<<"Image Resized to " << source.GetWidth()*xScale <<"x" << source.GetHeight()*yScale << std::endl;
+    return 1;
+}
+
+int main(){
+    const float xScale = 2, yScale = 2;
+    GrayscaleImage source;
+    source.Load("../../images/read.png");
+    if(bicubicInterpolation(source, xScale, yScale, "../../output/BiCubicOutput.png"))
+        std::cout<<"Image Resized to " << source.GetWidth()*xScale <<"x" << source.GetHeight()*yScale << std::endl;
+    else std::cout<<"Image could not be resized."<< std::endl;
     return 0;
 }

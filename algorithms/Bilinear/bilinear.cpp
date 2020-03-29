@@ -1,6 +1,5 @@
 #include "../headers/Image.h"
 #include <math.h>
-#include <string>
 
 int bilinearInterpolation(GrayscaleImage& source, const float xScale, const float yScale, const std::string& output){
     GrayscaleImage target(source.GetWidth()*xScale, source.GetHeight()*yScale);
