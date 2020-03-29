@@ -1,10 +1,8 @@
 #include "../headers/Image.h"
 #include <math.h>
+#include <string>
 
-int main(){
-    const float xScale = 0.5, yScale = 0.5;
-    GrayscaleImage source;
-    source.Load("../../images/read.png");
+int bilinearInterpolation(GrayscaleImage& source, const float xScale, const float yScale, const std::string& output){
     GrayscaleImage target(source.GetWidth()*xScale, source.GetHeight()*yScale);
     const double xScaleFactor = (double)source.GetWidth()/target.GetWidth(), yScaleFactor = (double)source.GetHeight()/target.GetHeight();
     for(int y=0; y<target.GetHeight(); y++)
@@ -17,6 +15,16 @@ int main(){
             target(x,y) = (k * y1) + (j * y2);
         }
 
-    target.Save("../../output/BilinearOutput.png");
+    target.Save(output);
+    return 1;
+}
+
+int main(){
+    GrayscaleImage source;
+    float xScale=3, yScale=3;
+    source.Load("../../images/read.png");
+    if (bilinearInterpolation(source, xScale, yScale, "../../output/BilinearOutput.png"))
+        std::cout<<"Image Resized to " << source.GetWidth()*xScale <<"x" << source.GetHeight()*yScale << std::endl;
+    else std::cout<<"Image could not be resized."<< std::endl;
     return 0;
 }
