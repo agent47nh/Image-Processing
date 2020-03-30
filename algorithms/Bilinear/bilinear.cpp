@@ -21,7 +21,7 @@ int bilinearInterpolation(GrayscaleImage& source, const float xScale, const floa
 int main(){
     GrayscaleImage source;
     float xScale=3, yScale=3;
-    source.Load("../../images/read.png");
+    source.Load("../../images/house.png");
     if (bilinearInterpolation(source, xScale, yScale, "../../output/BilinearOutput.png"))
         std::cout<<"Image Resized to " << source.GetWidth()*xScale <<"x" << source.GetHeight()*yScale << std::endl;
     else std::cout<<"Image could not be resized."<< std::endl;
