@@ -2,8 +2,8 @@
 
 #include <stdio.h>
 #include <vector>
-#include <iostream>
 #include <png.h>
+#include <iostream>
 #include <string>	
 #include <algorithm>
 
