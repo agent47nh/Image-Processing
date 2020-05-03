@@ -3,8 +3,8 @@
 int boxSmoothing(GrayscaleImage &source, const std::string &output) {
     GrayscaleImage target(source.GetWidth(), source.GetHeight());
     double lowPassValue = 1.0/(3.0*3.0), denominator = lowPassValue*9.0;                       //Kernel size is 3x3
-    for(int y = 1; y<target.GetHeight()-1; y++)
-        for(int x = 1; x<target.GetWidth()-1; x++){
+    for(int y = 0; y<target.GetHeight(); y++)
+        for(int x = 0; x<target.GetWidth(); x++){
             double pixelA = source.Get(x-1, y-1)*lowPassValue, pixelB = source.Get(x, y-1)*lowPassValue, pixelC = source.Get(x+1, y-1)*lowPassValue,
                    pixelD = source.Get(x-1, y)*lowPassValue, pixelE = source.Get(x, y)*lowPassValue, pixelF = source.Get(x+1, y)*lowPassValue,
                    pixelG = source.Get(x-1, y+1)*lowPassValue, pixelH = source.Get(x, y+1)*lowPassValue, pixelI = source.Get(x+1, y+1)*lowPassValue,
