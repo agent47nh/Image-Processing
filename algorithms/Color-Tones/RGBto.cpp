@@ -1,6 +1,21 @@
 #include "../headers/Image.h"
 #include <cmath>
 
+struct threeColors
+{
+    double color1;
+    double color2;
+    double color3;
+};
+
+struct fourColors{
+    double color1;
+    double color2;
+    double color3;
+    double color4;
+};
+
+
 double rTod(double radian){
     return radian * (180.0/3.141592653589793238463);
 }
@@ -9,9 +24,10 @@ double dTor(double degree){
     return degree * (3.141592653589793238463/180);
 }
 
-double* RGBtoHSL(const int colors[3]){
+threeColors RGBtoHSL(const threeColors RGBInput){
     static double HSLColor[3];
-    double redD = (double) colors[0]/255, greenD = (double) colors[1]/255, blueD = (double) colors[2]/255,
+    threeColors HSL;
+    double redD = (double) RGBInput.color1/255, greenD = (double) RGBInput.color2/255, blueD = (double) RGBInput.color3/255,
            max = std::max(redD, std::max(greenD, blueD)), min = std::min(redD, std::min(greenD, blueD)),
            delta = max - min, newH, newS, newL;
     if (delta == 0) newH = 0;
@@ -24,14 +40,14 @@ double* RGBtoHSL(const int colors[3]){
     if (delta == 0) newS = 0;
     else newS = (double) delta/(1-(fabs(2*newL)-1));
 
-    HSLColor[0] = newH+0.5; HSLColor[1] = newS, HSLColor[2] = newL;
+    HSL.color1 = newH+0.5; HSL.color2 = newS, HSL.color3 = newL;
 
-    return HSLColor;
+    return HSL;
 }
 
-double* HSLtoRGB(const double colors[3]){
-    static double RGBColor[3];
-    double currentH = colors[0],currentS = colors[1], currentL = colors[2],
+threeColors HSLtoRGB(const threeColors HSLInput){
+    threeColors RGBColor;
+    double currentH = HSLInput.color1,currentS = HSLInput.color2, currentL = HSLInput.color3,
            varC = (1-fabs((2*currentL)-1)) * currentS,
            varX = varC * (1-fabs(fmod((currentH/60), 2)-1)),
            varM = currentL - (varC/2), newR, newG, newB;
@@ -61,31 +77,31 @@ double* HSLtoRGB(const double colors[3]){
         newG = 0;
         newB = varX;
     }
-    RGBColor[0] = (newR + varM)* 255; RGBColor[1] = (newG + varM) * 255; RGBColor[2] = (newB + varM) * 255;
+    RGBColor.color1 = (newR + varM)* 255 + 0.5; RGBColor.color2 = (newG + varM) * 255 + 0.5; RGBColor.color3 = (newB + varM) * 255 + 0.5;
     return RGBColor;
 }
 
-double* RGBtoCMYK(const int colors[3]) {
-    static double CMYKColor[4];
-    double redD = (double) colors[0]/255, greenD = (double) colors[1]/255, blueD = (double) colors[2]/255,
+fourColors RGBtoCMYK(const threeColors RGBInput) {
+    fourColors CMYKColor;
+    double redD = (double) RGBInput.color1/255, greenD = (double) RGBInput.color2/255, blueD = (double) RGBInput.color3/255,
            max = std::max(redD, std::max(greenD, blueD)), 
            newC, newM, newY, newK;
     newK = (double)1 - max;
     newC = (double)(1-redD-newK)/(1-newK);
     newM = (double)(1-greenD-newK)/(1-newK);
     newY = (double)(1-blueD-newK)/(1-newK);
-    CMYKColor[0] = newC+0.005; CMYKColor[1] = newM+0.005; CMYKColor[2] = newY+0.005; CMYKColor[3] = newK+0.005;
+    CMYKColor.color1 = newC+0.005; CMYKColor.color2 = newM+0.005; CMYKColor.color3 = newY+0.005; CMYKColor.color4 = newK+0.005;
 
     return CMYKColor;
 }
 
-double* CMYKtoRGB(const double colors[4]) {
-    static double RGBColorFromCMYK[3] ={255 * (1-colors[0]) * (1-colors[3]), 255 * (1-colors[1]) * (1-colors[3]), 255 * (1-colors[2]) * (1-colors[3])};
+threeColors CMYKtoRGB(const fourColors CMYKInput) {
+    threeColors RGBColorFromCMYK ={255 * (1-CMYKInput.color1) * (1-CMYKInput.color4) + 0.5, 255 * (1-CMYKInput.color2) * (1-CMYKInput.color4) + 0.5, 255 * (1-CMYKInput.color3) * (1-CMYKInput.color4) + 0.5};
     return RGBColorFromCMYK;
 }
 
-double* RGBtoXYZ(const double colors[3]) { // Clamped
-    double RValue = colors[0], GValue = colors[1], BValue = colors[2];
+threeColors RGBtoXYZ(const threeColors RGBInput) { // Clamped
+    double RValue = RGBInput.color1, GValue = RGBInput.color2, BValue = RGBInput.color3;
 
     if(RValue<0) RValue = 0;
     else if(RValue>255) RValue = 255;
@@ -97,7 +113,7 @@ double* RGBtoXYZ(const double colors[3]) { // Clamped
     else if(BValue>255) BValue = 255;
 
     double varR = (double)RValue/255, varG = (double)GValue/255, varB = (double) BValue/255;
-    static double newColors[3];
+    threeColors XYZOutput;
     
     if(varR > 0.04045) varR = pow(((varR + 0.055 )/1.055),2.4);
     else varR = varR / 12.92;
@@ -112,15 +128,16 @@ double* RGBtoXYZ(const double colors[3]) { // Clamped
     varG *= 100;
     varB *= 100;
 
-    newColors[0] = varR * 0.412453 + varG * 0.357580 + varB * 0.180423;
-    newColors[1] = varR * 0.212671 + varG * 0.715160 + varB * 0.072169;
-    newColors[2] = varR * 0.019334 + varG * 0.119193 + varB * 0.950227;
+    XYZOutput.color1 = varR * 0.412453 + varG * 0.357580 + varB * 0.180423;
+    XYZOutput.color2 = varR * 0.212671 + varG * 0.715160 + varB * 0.072169;
+    XYZOutput.color3 = varR * 0.019334 + varG * 0.119193 + varB * 0.950227;
     
-    return newColors;
+    return XYZOutput;
+
 }
 
-double* XYZtoRGB(const double colors[3]) {  // Clamped
-    double XValue = colors[0], YValue = colors[1], ZValue = colors[2];
+threeColors XYZtoRGB(const threeColors XYZInput) {  // Clamped
+    double XValue = XYZInput.color1, YValue = XYZInput.color2, ZValue = XYZInput.color3;
 
     if(XValue<0) XValue = 0;
     else if(XValue>100) XValue = 100;
@@ -132,31 +149,31 @@ double* XYZtoRGB(const double colors[3]) {  // Clamped
     else if(ZValue>100) ZValue = 100;
 
     double varX = (double)XValue/100, varY= (double)YValue/100, varZ = (double) ZValue/100;
-    static double newColors[3];
+    threeColors RGBOutput;
 
-    newColors[0] = (varX *  3.240479) + (varY * -1.53715) + (varZ * -0.498535);
-    newColors[1] = (varX * -0.969256) + (varY *  1.875991) + (varZ *  0.041556);
-    newColors[2] = (varX *  0.055648) + (varY * -0.204043) + (varZ *  1.057311);
+    RGBOutput.color1 = (varX *  3.240479) + (varY * -1.53715) + (varZ * -0.498535);
+    RGBOutput.color2 = (varX * -0.969256) + (varY *  1.875991) + (varZ *  0.041556);
+    RGBOutput.color3 = (varX *  0.055648) + (varY * -0.204043) + (varZ *  1.057311);
     
-    if(newColors[0] > 0.0031308) newColors[0] = 1.055 * pow(newColors[0], (1.0/2.4))  - 0.055;
-    else newColors[0] *= 12.92;
+    if(RGBOutput.color1 > 0.0031308) RGBOutput.color1 = 1.055 * pow(RGBOutput.color1, (1.0/2.4))  - 0.055;
+    else RGBOutput.color1 *= 12.92;
     
-    if (newColors[1] > 0.0031308) newColors[1] = 1.055 * pow(newColors[1], (1.0/2.4))  - 0.055;
-    else newColors[1] *= 12.92;
+    if (RGBOutput.color2 > 0.0031308) RGBOutput.color2 = 1.055 * pow(RGBOutput.color2, (1.0/2.4))  - 0.055;
+    else RGBOutput.color2 *= 12.92;
 
-    if (newColors[2] > 0.0031308) newColors[2] = 1.055 * pow(newColors[2], (1.0/2.4))  - 0.055;
-    else newColors[2] *= 12.92;
+    if (RGBOutput.color3 > 0.0031308) RGBOutput.color3 = 1.055 * pow(RGBOutput.color3, (1.0/2.4))  - 0.055;
+    else RGBOutput.color3 *= 12.92;
     
-    newColors[0] *= 255+0.5;
-    newColors[1] *= 255+0.5;
-    newColors[2] *= 255+0.5;
+    RGBOutput.color1 *= 255+0.5;
+    RGBOutput.color2 *= 255+0.5;
+    RGBOutput.color3 *= 255+0.5;
     
-    return newColors;
+    return RGBOutput;
 }
 
-double* XYZtoLAB(const double colors[3]) {  // Clamped
+threeColors XYZtoLAB(const threeColors XYZInput) {  // Clamped
 
-    double XValue = colors[0], YValue = colors[1], ZValue = colors[2];
+    double XValue = XYZInput.color1, YValue = XYZInput.color2, ZValue = XYZInput.color3;
 
     if(XValue<0) XValue = 0;
     else if(XValue>100) XValue = 100;
@@ -179,26 +196,26 @@ double* XYZtoLAB(const double colors[3]) {  // Clamped
     if (ZVar > 0.008856) ZVar = pow(ZVar , (1.0/3)); 
     else ZVar = ((903.3 * ZVar) + 16)/116;
 
-    static double newColor[3] = {((116 * YVar) - 16), 500 * (XVar - YVar), 200 * (YVar - ZVar)};
+    threeColors LABOutput = {((116 * YVar) - 16), 500 * (XVar - YVar), 200 * (YVar - ZVar)};
 
-    return newColor;
+    return LABOutput;
 }
 
-double* LABtoXYZ(const double colors[3]) {  //Clamped
+threeColors LABtoXYZ(const threeColors LABInput) {  //Clamped
     // White Reference Point D65: (X, Y, Z) = (0.95047, 1.0000, 1.08883)
-    double luminance = colors[0], chroma = colors[1], hue = colors[2];
+    double luminance = LABInput.color1, AVar = LABInput.color2, BVar = LABInput.color3;
 
     if(luminance<0) luminance = 0;
     else if(luminance>100) luminance = 100;
 
-    if(chroma<0) chroma = 0;
-    else if(chroma>100) chroma = 100;
+    if(AVar <  -128) AVar = -128;
+    else if(AVar>128) AVar = 128;
 
-    if(hue<0) hue = 0;
-    else if(hue>360) hue = 360;
+    if(BVar < -128) BVar = -128;
+    else if(BVar > 128) BVar = 128;
 
     double XRef = 95.047, YRef = 100.0, ZRef = 108.883,
-           FYVar = (luminance+16)/116, FXVar = (chroma/500.0) + FYVar, FZVar = FYVar - (hue/200), XVar, YVar, ZVar;
+           FYVar = (luminance+16)/116, FXVar = (AVar/500.0) + FYVar, FZVar = FYVar - (BVar/200), XVar, YVar, ZVar;
 
     if(pow(FXVar, 3) > 0.008856) XVar =  pow(FXVar, 3);
     else XVar = ((116 * FXVar) - 16) / 903.3;
@@ -209,30 +226,31 @@ double* LABtoXYZ(const double colors[3]) {  //Clamped
     if(pow(FZVar, 3) > 0.008856) ZVar =  pow(FZVar, 3);
     else ZVar = ((116 * FZVar) - 16) / 903.3;
 
-    static double newColors[3] = {XVar*XRef, YVar*YRef, ZVar*ZRef};
+    threeColors XYZOutput = {XVar*XRef, YVar*YRef, ZVar*ZRef};
 
-    return newColors;
+    return XYZOutput;
 }
 
-double* LABToLCh(const double colors[3]) {  //Clamped
-    double luminance = colors[0], varA = colors[1], brightness = colors[2];
+threeColors LABToLCh(const threeColors LABInput) {  //Clamped
+    double luminance = LABInput.color1, varA = LABInput.color2, brightness = LABInput.color3;
 
     if(brightness>128) brightness = 128;
     else if(brightness == 0) brightness = 0.0001;
     else if(brightness < -128) brightness = -128;
 
-    if(varA<0) varA = 0;
-    else if(varA>100) varA = 100;
+    if(varA<-128) varA = -128;
+    else if(varA == 0) varA = 0.0001;
+    else if(varA>128) varA = 128;
 
     if(luminance<0) luminance = 0;
     else if(luminance>100) luminance = 100;
 
-    static double newColors[3] = {luminance, sqrt(pow(varA,2)+pow(brightness,2)), atan(brightness/varA)>0?((rTod(atan(brightness/varA)))):(rTod((atan(brightness/colors[1])+360)))};
-    return newColors;
+    threeColors LChOutput = {luminance, sqrt(pow(varA,2)+pow(brightness,2)), atan(brightness/varA)>0?rTod(atan(brightness/varA)):rTod(atan(brightness/varA))+180};
+    return LChOutput;
 }
 
-double* LChToLAB(const double colors[3]) {  //Clamped
-    double luminance = colors[0], chroma = colors[1], hue = colors[2];
+threeColors LChToLAB(const threeColors LChInput) {  //Clamped
+    double luminance = LChInput.color1, chroma = LChInput.color2, hue = LChInput.color3;
 
     if(luminance<0) luminance = 0;
     else if(luminance>100) luminance = 100;
@@ -243,25 +261,30 @@ double* LChToLAB(const double colors[3]) {  //Clamped
     if(hue<0) hue = 0;
     else if(hue>360) hue = 360;
 
-    static double newColors[3] = {luminance, chroma*cos(dTor(hue)), chroma*sin(dTor(hue))};
-    return newColors;
+    threeColors LABOutput = {luminance, chroma*cos(dTor(hue)), chroma*sin(dTor(hue))};
+    return LABOutput;
 }
 
-double* RGBtoLCh(const double colors[3]) {
+threeColors RGBToLCh(const threeColors colors) {
     return LABToLCh(XYZtoLAB(RGBtoXYZ(colors)));
 }
 
+threeColors LChToRGB(const threeColors color) {
+    return XYZtoRGB(LABtoXYZ(LChToLAB(color)));
+}
+
 int main(){
-    // double rgb[] = {235, 200, 183};
-    // // double *hsl = RGBtoHSL(rgb), *rgbfrom = HSLtoRGB(hsl), *cmyk = RGBtoCMYK(rgb), *rgbfromcmyk = CMYKtoRGB(cmyk), *RGBtoXYZa = RGBtoXYZ(rgb),
-    // //        *XYZtoRGBa = XYZtoRGB(RGBtoXYZa), *XYZtoLABa = XYZtoLAB(RGBtoXYZa), *LABtoXYZa = LABtoXYZ(XYZtoLABa), *LABtoLCHa = LABToLCh(XYZtoLABa),
-    // //        *LCHtoLABa = LChToLAB(LABtoLCHa);
-    // std::cout<< "Original ---> R: " << rgb[0] << " \t\tG: " << rgb[1] << " \t\tB: " << rgb[2] << std::endl;
-    // // std::cout<< "Converted --> X: "<< RGBtoXYZa[0] << " \tY: " <<RGBtoXYZa[1]<< " \tZ: " <<RGBtoXYZa[2]<<std::endl;
-    // // std::cout<< "Converted --> L*: "<< XYZtoLABa[0] << " \tA*: " <<XYZtoLABa[1]<< " \tB*: " <<XYZtoLABa[2]<<std::endl;
-    // // std::cout<< "Converted --> L*: "<< LABtoLCHa[0] << " \tC: " <<LABtoLCHa[1]<< " \th: " <<LABtoLCHa[2]<<std::endl;
-    // // std::cout<< "Reverted ---> L*: "<< LCHtoLABa[0] << " \tA*: " <<LCHtoLABa[1]<< " \tB*: " <<LCHtoLABa[2]<<std::endl;
-    // double *valueME = LABToLCh(XYZtoLAB(RGBtoXYZ(rgb)));
+    // threeColors RGB = {165, 202, 153};
+    // threeColors hsl = RGBtoHSL(RGB), hsl2rgb = HSLtoRGB(hsl); fourColors cmyk = RGBtoCMYK(RGB);
+    // threeColors cmyk2rgb = CMYKtoRGB(cmyk), rgb2xyz = RGBtoXYZ(RGB), xyz2rgb = XYZtoRGB(rgb2xyz), xyz2lab = XYZtoLAB(rgb2xyz), lab2xyz = LABtoXYZ(xyz2lab), lab2lch = LABToLCh(xyz2lab), lch2lab = LChToLAB(lab2lch);
+    // std::cout<< "Original ---> R: " << RGB.color1 << " \t\tG: " << RGB.color2 << " \t\tB: " << RGB.color3 << std::endl;
+    // std::cout<< "Converted --> X: "<< rgb2xyz.color1 << " \tY: " << rgb2xyz.color2 << " \tZ: " << rgb2xyz.color3 <<std::endl;
+    // std::cout<< "Converted---> L: "<< xyz2lab.color1 << " \tA: " << xyz2lab.color2 << " \tB: " << xyz2lab.color3 <<std::endl;
+    // std::cout<< "Converted---> L: "<< lab2lch.color1 << " \tC: " << lab2lch.color2 << " \th: " << lab2lch.color3 <<std::endl;
+    // std::cout<< "Reverted ---> L: "<< lch2lab.color1 << " \tA: " << lch2lab.color2 << " \tB: " << lch2lab.color3 <<std::endl;
+    // std::cout<< "Converted --> L*: "<< XYZtoLABa[0] << " \tA*: " <<XYZtoLABa[1]<< " \tB*: " <<XYZtoLABa[2]<<std::endl;
+    // std::cout<< "Converted --> L*: "<< LABtoLCHa[0] << " \tC: " <<LABtoLCHa[1]<< " \th: " <<LABtoLCHa[2]<<std::endl;
+    // std::cout<< "Reverted ---> L*: "<< LCHtoLABa[0] << " \tA*: " <<LCHtoLABa[1]<< " \tB*: " <<LCHtoLABa[2]<<std::endl;
     // std::cout<< "Converted --> L*: "<< valueME[0] << " \tC: " <<valueME[1]<< " \th: " <<valueME[2]<<std::endl;
 
 
@@ -269,15 +292,19 @@ int main(){
     source.Load("../../images/house.png");
     ColorImage target(source.GetWidth(), source.GetHeight());
 
-    for(int x = 0; x < target.GetWidth(); x++)
-        for(int y = 0; y < target.GetHeight(); y++){
-            int red = source.Get(x,y).r, green = source.Get(x,y).g, blue = source.Get(x,y).b; double colors[] = {red, green, blue};
-            double *rgbToLCh = RGBtoLCh(colors);
-            std::cout<< "Converted --> L*: "<< rgbToLCh[0] << " \tC: " <<rgbToLCh[1]<< " \th: " <<rgbToLCh[2]<<std::endl;
-            // target(x,y).r = backRGB[0];
-            // target(x,y).g = backRGB[1];
-            // target(x,y).b = backRGB[2];
+    for (int y = 0; y < target.GetHeight(); y++)
+        for (int x = 0; x < target.GetWidth(); x++){
+            double red = source.Get(x,y).r, green = source.Get(x,y).g, blue = source.Get(x,y).b; threeColors colors = {red, green, blue},
+            rgb2lch = RGBToLCh(colors);
+            rgb2lch.color1 *= 0.5;
+            rgb2lch.color2 *= 0.5;
+            rgb2lch.color3 *= 0.5;
+            threeColors lch2rgb = LChToRGB(rgb2lch);
+            target(x,y).r = lch2rgb.color1;
+            target(x,y).g = lch2rgb.color2;
+            target(x,y).b = lch2rgb.color3;
         }
 
-    // target.Save("../../output/LChOutput.png");
+    target.Save("../../output/LChOutput.png");
+
 }
