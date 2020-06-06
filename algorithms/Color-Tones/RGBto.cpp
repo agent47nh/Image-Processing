@@ -256,7 +256,7 @@ threeColors LChToLAB(const threeColors LChInput) {  //Clamped
     else if(luminance>100) luminance = 100;
 
     if(chroma<0) chroma = 0;
-    else if(chroma>100) chroma = 100;
+    else if(chroma>200) chroma = 200;
 
     if(hue<0) hue = 0;
     else if(hue>360) hue = 360;
