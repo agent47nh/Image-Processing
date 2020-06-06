@@ -81,6 +81,82 @@ threeColors HSLtoRGB(const threeColors HSLInput){
     return RGBColor;
 }
 
+threeColors RGBToHSV(const threeColors RGBInput){
+    threeColors HSV;
+    double red = RGBInput.color1, green = RGBInput.color2, blue = RGBInput.color3;
+    if(red>255) red = 255;
+    else if(red<0) red = 0;
+    if(green>255) green = 255;
+    else if(green<0) green = 0;
+    if(blue>255) blue = 255;
+    else if(blue<0) blue = 0;
+    
+    double redD = (double) red/255, greenD = (double) green/255, blueD = (double) blue/255,
+           max = std::max(redD, std::max(greenD, blueD)), min = std::min(redD, std::min(greenD, blueD)),
+           delta = max - min, newH=0, newS=0, newV=0;
+    if (delta == 0) newH = 0;
+    else if (max == redD) newH = 60 * fmod(((greenD-blueD)/delta),6);
+    else if (max == greenD) newH = 60 * (((blueD-redD)/delta)+2);
+    else if (max == blueD) newH = 60 * (((redD-greenD)/delta)+4);
+
+
+    if (max > 0) newS = delta/max;
+    else newS=0;
+
+    newV = max;
+
+    HSV.color1 = newH; HSV.color2 = (double) newS*100, HSV.color3 = (double)newV*100;
+
+    return HSV;
+}
+
+threeColors HSVToRGB(const threeColors HSVInput){
+    threeColors RGBColor;
+    double hue = HSVInput.color1, saturation = (double)HSVInput.color2/100, value = (double)HSVInput.color3/100;
+
+    if(hue>360) hue = 360;
+    else if(hue<0) hue = 0;
+
+    if(saturation>100) saturation = 100;
+    else if(saturation<0) saturation = 0;
+    
+    if(value>100) value = 100;
+    else if(value<0) value = 0;
+
+    double currentH = hue, currentS = saturation, currentV = value,
+           varC = currentV * currentS,
+           varX = varC * (1-fabs(fmod((currentH/60), 2)-1)),
+           varM = currentV - varC, newR, newG, newB;
+
+    if (currentH >= 0 && currentH < 60){
+        newR = varC;
+        newG = varX;
+        newB = 0;
+    } else if (currentH >= 60 && currentH < 120) {
+        newR = varX;
+        newG = varC;
+        newB = 0;
+    } else if (currentH >=120 && currentH < 180) {
+        newR = 0;
+        newG = varC;
+        newB = varX;
+    } else if (currentH >=180 && currentH < 240) {
+        newR = 0;
+        newG = varX;
+        newB = varC;
+    } else if (currentH >=240 && currentH < 300) {
+        newR = varX;
+        newG = 0;
+        newB = varC;
+    } else if (currentH >=300 && currentH < 360) {
+        newR = varC;
+        newG = 0;
+        newB = varX;
+    }
+    RGBColor.color1 = (newR + varM)* 255; RGBColor.color2 = (newG + varM) * 255; RGBColor.color3 = (newB + varM) * 255;
+    return RGBColor;
+}
+
 fourColors RGBtoCMYK(const threeColors RGBInput) {
     fourColors CMYKColor;
     double redD = (double) RGBInput.color1/255, greenD = (double) RGBInput.color2/255, blueD = (double) RGBInput.color3/255,
