@@ -418,6 +418,6 @@ int main(){
     GrayscaleImage target;
     source.Load("../../images/london.png");
 	target = sketchFX(source,50,0, 220);
-    target.Save("../../output/build_own_fxRGBFunc.png");
+    target.Save("../../output/build_own_fxRGB.png");
     return 0;
 }
