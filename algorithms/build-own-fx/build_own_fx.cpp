@@ -384,9 +384,9 @@ GrayscaleImage contrastStretching(const GrayscaleImage& source, double level=1) 
 
 GrayscaleImage sketchFX(ColorImage& source, int controlPixel=100, int blackPoint=50, int whitePoint=255){
 	ColorImage target;
-    target = boxSmoothingColor(source);
 	controlPixel = controlPixel>255?255:controlPixel;
 	controlPixel = controlPixel<0?0:controlPixel;
+    target = boxSmoothingColor(source);
     for(int i=0; i<20; i++) target = boxSmoothingColor(target);
     for(int y = 0; y<target.GetHeight(); y++)
         for(int x = 0; x<target.GetWidth(); x++){
@@ -409,15 +409,15 @@ GrayscaleImage sketchFX(ColorImage& source, int controlPixel=100, int blackPoint
         for(int x = 0; x<target0.GetWidth(); x++){
             target0(x,y) = target0.Get(x,y)<controlPixel?blackPoint:whitePoint;
         }
-	// target0 = boxSmoothing(target0);
+	target0 = boxSmoothing(target0);
 	return target0;
 }
 
 int main(){
     ColorImage source;
     GrayscaleImage target;
-    source.Load("../../images/london.png");
-	target = sketchFX(source,50,0, 220);
+    source.Load("../../images/model1.png");
+	target = sketchFX(source,10,0, 215);
     target.Save("../../output/build_own_fxRGB.png");
     return 0;
 }
